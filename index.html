@@ -332,7 +332,6 @@
     // ========================================
 
     // ボディ代（1枚あたり）
-    // ここは先ほどのコードの金額を維持しています
     const bodyMaster = [
       { id: "dry-shirt", name: "ドライシャツ", price: 270 },
       { id: "cotton-shirt", name: "綿Tシャツ", price: 400 },
@@ -348,7 +347,6 @@
     ];
 
     // 袖用プルダウン
-    // 先ほどの料金体系に合わせて設定
     const sleeveOptions = [
       { id: "none", label: "なし", price: 0 },
       { id: "sleeve-1-normal", label: "通常カラー", price: 200 },
@@ -356,7 +354,6 @@
     ];
 
     // 胸元用プルダウン
-    // 先ほどの料金体系を維持
     const chestOptions = [
       { id: "none", label: "なし", price: 0 },
       { id: "chest-1-normal", label: "通常カラー", price: 200 },
@@ -367,14 +364,14 @@
     const bigDesignOptions = [
       { id: "none", label: "なし", price: 0 },
       { id: "big-4-normal", label: "背ネーム/背番号", price: 300 },
+      { id: "big-4-normal", label: "背ネーム/背番号（ラメ）", price: 300 },
       { id: "big-4-normal", label: "④（24cm×30cm）", price: 300 },
       { id: "big-4-lame", label: "④（ラメ）", price: 600 },
       { id: "big-5-normal", label: "⑤（30cm×40cm）", price: 500 },
       { id: "big-5-lame", label: "⑤（ラメ）", price: 800}
     ];
 
-    // 送料
-    // 先ほどと同じく固定送料
+    // 運送コスト
     function getShippingCost(quantity) {
       return 3000;
     }
