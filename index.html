@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>社内用 売価計算システム</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+      background: #f3f3f3;
+      color: #111;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+  margin: 0 auto 20px auto;
+  font-size: 28px;
+  max-width: 860px;
+}
+
+   .top-form {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 12px;
+  max-width: 860px;
+  margin: 0 auto 28px auto;
+}
+
+    .form-label,
+    .form-input {
+      background: #fff;
+      border: 2px solid #bfbfbf;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      padding: 0 18px;
+      font-size: 22px;
+    }
+
+    .form-label {
+      font-weight: 700;
+      justify-content: center;
+    }
+
+    .form-input select,
+    .form-input input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 22px;
+      background: transparent;
+    }
+
+  .shirt-area {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  margin-bottom: 32px;
+}
+
+    .shirt-card {
+      position: relative;
+      width: 420px;
+    }
+
+    .shirt-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .shirt-image-wrap {
+      position: relative;
+      width: 100%;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .shirt-image {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .overlay-select {
+      position: absolute;
+      width: 110px;
+      height: 40px;
+      border: 2px solid #222;
+      background: rgba(255, 255, 255, 0.96);
+      font-size: 14px;
+      padding: 2px 4px;
+    }
+
+    .front-center         { top: 150px; left: 135px; width: 130px; }
+    .back-center          { top: 70px; left: 135px; width: 130px; }
+    .front-left-chest     { top: 80px; left: 130px; }
+    .front-right-chest    { top: 80px; right: 130px; }
+    .front-left-shoulder  { top: 75px; left: 20px; }
+    .front-right-shoulder { top: 75px; right: 20px; }
+    
+
+    .summary {
+  background: #fff;
+  border: 4px solid #111;
+  padding: 18px 24px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: 200px 1fr 70px;
+  align-items: center;
+  padding: 14px 0;
+  border-bottom: 3px solid #111;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-label {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.summary-value {
+  text-align: center;
+  font-size: 44px;
+  font-weight: 800;
+}
+
+.summary-unit {
+  text-align: right;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+    .detail-box {
+      margin-top: 24px;
+      background: #fff;
+      border: 2px solid #cfcfcf;
+      padding: 18px;
+      font-size: 16px;
+      line-height: 1.9;
+      max-width: 860px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .detail-box strong {
+      display: inline-block;
+      min-width: 160px;
+    }
+
+    .note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    @media (max-width: 900px) {
+      .shirt-area {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .shirt-card {
+        width: 100%;
+        max-width: 420px;
+      }
+
+      .summary-row {
+        grid-template-columns: 140px 1fr 50px;
+      }
+
+      .summary-label {
+        font-size: 20px;
+      }
+
+      .summary-value {
+        font-size: 42px;
+      }
+
+      .summary-unit {
+        font-size: 36px;
+      }
+    }
+    /* 胸元だけ幅を小さくする */
+.front-left-chest,
+.front-right-chest {
+  width: 60px;
+}
+    /* 袖だけ幅を小さくする */
+.front-left-shoulder,
+.front-right-shoulder{
+  width: 60px;
+}
+    /* 前後だけ幅を大きくする */
+.front-center,
+.back-center   {
+  width: 150px;
+  height: 150px;
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>社内用 売価計算システム</h1>
+
+    <div class="top-form">
+      <div class="form-label">ボディの種類</div>
+      <div class="form-input">
+        <select id="bodySelect"></select>
+      </div>
+
+      <div class="form-label">枚数</div>
+      <div class="form-input">
+        <input type="number" id="quantityInput" min="1" value="40" />
+      </div>
+    </div>
+
+    <div class="shirt-area">
+      <div class="shirt-card">
+        <div class="shirt-title">前面</div>
+        <div class="shirt-image-wrap">
+          <img src="前面イメージ.png" alt="Tシャツ前面" class="shirt-image" />
+
+          <!-- 袖 -->
+          <select class="overlay-select print-select front-left-shoulder" data-type="sleeve"></select>
+
+          <!-- 胸 -->
+          <select class="overlay-select print-select front-left-chest" data-type="chest"></select>
+          <select class="overlay-select print-select front-right-chest" data-type="chest"></select>
+
+          <!-- 前面大 -->
+          <select class="overlay-select print-select front-center" data-type="big"></select>
+
+          <!-- 袖 -->
+          <select class="overlay-select print-select front-right-shoulder" data-type="sleeve"></select>
+        </div>
+      </div>
+
+      <div class="shirt-card">
+        <div class="shirt-title">背面</div>
+        <div class="shirt-image-wrap">
+          <img src="背面イメージ.png" alt="Tシャツ背面" class="shirt-image" />
+
+          <!-- 背面大 -->
+          <select class="overlay-select print-select back-center" data-type="big"></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary">
+      <div class="summary-row">
+        <div class="summary-label">原価</div>
+        <div class="summary-value" id="costPrice">0</div>
+        <div class="summary-unit">円</div>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-label">売価</div>
+        <div class="summary-value" id="salePrice">0</div>
+        <div class="summary-unit">円</div>
+      </div>
+
+      <div class="summary-row">
+        <div class="summary-label">
+          最低価格
+          <small>（これを下回る場合は上司相談）</small>
+        </div>
+        <div class="summary-value" id="minPrice">0</div>
+        <div class="summary-unit">円</div>
+      </div>
+    </div>
+
+    <div class="detail-box">
+      <div><strong>ボディ代（1枚）</strong><span id="detailBody">0円</span></div>
+      <div><strong>印刷代（1枚合計）</strong><span id="detailPrint">0円</span></div>
+      <div><strong>輸送コスト</strong><span id="detailShipping">0円</span></div>
+      <div><strong>消費税</strong><span>1.1倍</span></div>
+      <div class="note">
+        計算式：｛（（ボディ代＋印刷代）×枚数）＋送料｝×1.1 ÷ 枚数
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================
+    // 1. マスタ設定
+    // ========================================
+
+    // ボディ代（1枚あたり）
+    // ここは先ほどのコードの金額を維持しています
+    const bodyMaster = [
+      { id: "dry-shirt", name: "ドライシャツ", price: 270 },
+      { id: "cotton-shirt", name: "綿Tシャツ", price: 400 },
+      { id: "long-sleeve", name: "ドライロンT", price: 390 },
+      { id: "long-sleeve", name: "コットンロンT", price: 560 },
+      { id: "polo", name: "ドライポロ", price: 500 },
+      { id: "polo", name: "圧着ホッケー", price: 625 },
+      { id: "polo", name: "圧着野球（ストライプなし）", price: 800 },
+      { id: "polo", name: "圧着野球（ストライプあり）", price: 1000 },
+      { id: "polo", name: "スウェット", price: 975 },
+      { id: "polo", name: "パーカー", price: 1300 },
+      { id: "polo", name: "ジップパーカー", price: 1600 }
+    ];
+
+    // 袖用プルダウン
+    // 先ほどの料金体系に合わせて設定
+    const sleeveOptions = [
+      { id: "none", label: "なし", price: 0 },
+      { id: "sleeve-1-normal", label: "通常カラー", price: 200 },
+      { id: "sleeve-1-lame", label: "ラメカラー", price: 400 }
+    ];
+
+    // 胸元用プルダウン
+    // 先ほどの料金体系を維持
+    const chestOptions = [
+      { id: "none", label: "なし", price: 0 },
+      { id: "chest-1-normal", label: "通常カラー", price: 200 },
+      { id: "chest-1-lame", label: "ラメカラー", price: 400 },
+    ];
+
+    // 前後の大きいデザイン用プルダウン
+    const bigDesignOptions = [
+      { id: "none", label: "なし", price: 0 },
+      { id: "big-4-normal", label: "④（24cm×30cm）", price: 300 },
+      { id: "big-4-lame", label: "④（ラメ）", price: 600 },
+      { id: "big-5-normal", label: "⑤（30cm×40cm）", price: 500 },
+      { id: "big-5-lame", label: "⑤（ラメ）", price: 800}
+    ];
+
+    // 送料
+    // 先ほどと同じく固定送料
+    function getShippingCost(quantity) {
+      return 3000;
+    }
+
+    // ========================================
+    // 2. DOM取得
+    // ========================================
+    const bodySelect = document.getElementById("bodySelect");
+    const quantityInput = document.getElementById("quantityInput");
+    const printSelects = document.querySelectorAll(".print-select");
+
+    const costPriceEl = document.getElementById("costPrice");
+    const salePriceEl = document.getElementById("salePrice");
+    const minPriceEl = document.getElementById("minPrice");
+
+    const detailBodyEl = document.getElementById("detailBody");
+    const detailPrintEl = document.getElementById("detailPrint");
+    const detailShippingEl = document.getElementById("detailShipping");
+
+    // ========================================
+    // 3. 初期化
+    // ========================================
+    function initBodyOptions() {
+      bodyMaster.forEach((body) => {
+        const option = document.createElement("option");
+        option.value = body.id;
+        option.textContent = body.name;
+        bodySelect.appendChild(option);
+      });
+    }
+
+    function getOptionsByType(type) {
+      if (type === "sleeve") return sleeveOptions;
+      if (type === "chest") return chestOptions;
+      if (type === "big") return bigDesignOptions;
+      return [{ id: "none", label: "なし", price: 0 }];
+    }
+
+    function initPrintOptions() {
+      printSelects.forEach((select) => {
+        const type = select.dataset.type;
+        const options = getOptionsByType(type);
+
+        select.innerHTML = "";
+
+        options.forEach((item) => {
+          const option = document.createElement("option");
+          option.value = item.id;
+          option.textContent = item.label;
+          option.dataset.price = item.price;
+          select.appendChild(option);
+        });
+
+        select.value = "none";
+      });
+    }
+
+    // ========================================
+    // 4. 計算処理
+    // ========================================
+    function getSelectedBody() {
+      return bodyMaster.find((item) => item.id === bodySelect.value);
+    }
+
+    function getSelectedPrintTotalPerPiece() {
+      let total = 0;
+
+      printSelects.forEach((select) => {
+        const selectedOption = select.options[select.selectedIndex];
+        const price = Number(selectedOption?.dataset.price || 0);
+        total += price;
+      });
+
+      return total;
+    }
+
+    function formatNumber(value) {
+      return Math.round(value).toLocaleString("ja-JP");
+    }
+
+    function calculatePrice() {
+      const body = getSelectedBody();
+      const quantity = Number(quantityInput.value) || 0;
+
+      if (!body || quantity <= 0) {
+        costPriceEl.textContent = "0";
+        salePriceEl.textContent = "0";
+        minPriceEl.textContent = "0";
+
+        detailBodyEl.textContent = "0円";
+        detailPrintEl.textContent = "0円";
+        detailShippingEl.textContent = "0円";
+        return;
+      }
+
+      const bodyPrice = body.price;
+      const printPricePerPiece = getSelectedPrintTotalPerPiece();
+      const shipping = getShippingCost(quantity);
+
+      // 原価（1枚あたり）
+      const costPerPiece =
+        ((((bodyPrice + printPricePerPiece) * quantity) + shipping) * 1.1) / quantity;
+
+      // 売価・最低価格
+      const salePrice = costPerPiece + 1000;
+      const minPrice = costPerPiece + 500;
+
+      costPriceEl.textContent = formatNumber(costPerPiece);
+      salePriceEl.textContent = formatNumber(salePrice);
+      minPriceEl.textContent = formatNumber(minPrice);
+
+      detailBodyEl.textContent = `${formatNumber(bodyPrice)}円`;
+      detailPrintEl.textContent = `${formatNumber(printPricePerPiece)}円`;
+      detailShippingEl.textContent = `${formatNumber(shipping)}円`;
+    }
+
+    // ========================================
+    // 5. イベント
+    // ========================================
+    bodySelect.addEventListener("change", calculatePrice);
+    quantityInput.addEventListener("input", calculatePrice);
+
+    printSelects.forEach((select) => {
+      select.addEventListener("change", calculatePrice);
+    });
+
+    // ========================================
+    // 6. 実行
+    // ========================================
+    initBodyOptions();
+    initPrintOptions();
+    bodySelect.value = "dry-shirt";
+    calculatePrice();
+  </script>
+<script>
+const password = "0803"; 
+
+const input = prompt("パスワードを入力してください");
+
+if (input !== password) {
+  document.body.innerHTML = "アクセスできません";
+}
+</script>
+</body>
+</html>
